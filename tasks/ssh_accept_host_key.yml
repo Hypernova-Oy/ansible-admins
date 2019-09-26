@@ -1,0 +1,39 @@
+---
+
+## IN THIS FILE ##
+#
+# Peeks at the host key of the current host and adds it to the globally known hosts of the
+# central controller.
+#
+# tasks/provision_lxc.yml does something very similar to this. If this mechanism changes, make sure to update
+# the almost duplicate as well.
+
+- name: Shorthand variables
+  set_fact:
+    hostkey_staging_file: "{{secret}}/{{inventory_hostname}}/ssh_host_ecdsa_key.pub"
+
+# current host can be behind a bastion host, so we cannot access it directly from filesystem
+- name: "Fetch hostkey from {{inventory_hostname}}"
+  fetch:
+    src: "/etc/ssh/ssh_host_ecdsa_key.pub"
+    dest: "{{hostkey_staging_file}}"
+    flat: yes
+
+- name: Transform host key 1
+  set_fact:
+    host_key_parts: "{{ lookup('file', hostkey_staging_file).split(' ') }}"
+- name: Transform host key 2
+  set_fact:
+    host_key: "{{inventory_hostname +' '+ host_key_parts[0] +' '+ host_key_parts[1]}}"
+
+# Escalate permissions to the central controller and set the global host key
+- name: "Set host key from {{inventory_hostname}}"
+  lineinfile:
+    dest:   "/etc/ssh/ssh_known_hosts"   #this is the GlobalKnownHostsFile (man(5) ssh_config) shared by all users
+    line:   "{{host_key}}"
+    create: "yes"
+    owner:  "root"
+    group:  "root"
+    mode:   "0644"
+  delegate_to: localhost #localhost is always the Ansible central controller.
+  become: yes

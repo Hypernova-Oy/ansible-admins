@@ -1,0 +1,12 @@
+---
+
+#
+# Allow more ssh-keys than just the sysadmins' keys, keys are usernames of existing accounts
+#
+#eg.
+#extra_ssh_keys:
+#  john:
+#    - ssh-rsa AAAAB3NzaC1yc2EAAAADA......mzOpb+6UrDXLZqWFmwJniZ56UxH john@home
+#    - ssh-rsa AAAAB3NzaC1yc2EAAAADA......kfIol+K98Dkfmv81admKSjgpOzT john@home-laptop
+extra_ssh_keys: []
+

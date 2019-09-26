@@ -1,0 +1,15 @@
+---
+
+##IN THIS FILE##
+#
+# Authorizes ssh keys for sysadmins
+#
+# Accepts host keys from remote hosts
+#
+
+- include_tasks: ssh_authorize_ssh_key.yml
+  with_items: "{{sysadmins}}"
+  loop_control:
+    loop_var: userkey
+
+- import_tasks: ssh_accept_host_key.yml

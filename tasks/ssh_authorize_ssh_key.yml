@@ -1,0 +1,23 @@
+---
+
+- name: "ssh - {{userkey}} - Verify sysadmin is present"
+  assert:
+    that:
+      - "sysadmins[userkey].username"
+
+- name: Shorthand variables
+  set_fact:
+    username: "{{sysadmins[userkey].username}}"
+    ssh_key:  "{{sysadmins[userkey].ssh_key}}"
+
+- name: Merge allowed authorized keys from extra_ssh_keys[username] and sysadmins[userkey].ssh_key
+  set_fact:
+    ssh_keys: "{{ [ssh_key] | union(extra_ssh_keys[username]|d([])) }}"
+
+- name: ssh - {{userkey}} - Allow authorized key took from central controller
+  authorized_key:
+    user:      "{{username}}"
+    state:     "present"
+    key:       "{{ssh_keys|join(\"\n\")}}"
+    exclusive: True
+  become: yes

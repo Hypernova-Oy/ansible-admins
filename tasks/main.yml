@@ -1,0 +1,30 @@
+---
+
+##
+## IN THIS FILE
+##
+## Configure admin access and toys to the given host
+##
+##
+
+- name: Make sure sysadmins preferred shells are available
+  apt:
+    name: "{{sysadmins[item]['shell_name']}}"
+  with_items: "{{sysadmins}}"
+  become: yes
+
+- name: Set sysadmin users
+  user:
+    name:       "{{item}}"
+    password:   "{{sysadmins[item]['password']}}"
+    shell:      "{{sysadmins[item]['shell_path']}}"
+    groups:     "sudo"
+    createhome: yes
+    system:     yes
+    state:      present
+    generate_ssh_key: yes
+    update_password: always
+  with_items: "{{sysadmins}}"
+  become: yes
+
+- import_tasks: ssh_access.yml
